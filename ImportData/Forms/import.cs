@@ -14,6 +14,7 @@ using Microsoft.Office.Interop.Excel;
 using System.Runtime.InteropServices;
 using DataTable = System.Data.DataTable;
 using Excel = Microsoft.Office.Interop.Excel;
+using System.Drawing.Drawing2D;
 
 namespace ImportData
 {
@@ -117,11 +118,11 @@ namespace ImportData
 
 
         }
-       static string databasename = "";
+        static string databasename = "";
         string fname = "";
         string databaseTable;
-       // ArticleV2
- 
+        // ArticleV2
+
         public IList<string> ListTables()
         {
             string myConnecting = @"Server= DESKTOP-5801JMQ\SQLEXPRESS01; Database= " + databasename + "; Integrated Security=True;";
@@ -138,7 +139,7 @@ namespace ImportData
             con.Close();
             return tables;
         }
-        
+
         public DataTable getDataBaseData()
         {
             databaseTable = databaseTables.SelectedItem.ToString();
@@ -147,7 +148,7 @@ namespace ImportData
             var table = new DataTable();
             string myConnecting = @"Server= DESKTOP-5801JMQ\SQLEXPRESS01; Database= " + databasename + "; Integrated Security=True;";
 
-            using (var da = new SqlDataAdapter("SELECT * FROM "+databaseTable, myConnecting))
+            using (var da = new SqlDataAdapter("SELECT * FROM " + databaseTable, myConnecting))
             {
                 da.Fill(table);
             }
@@ -159,9 +160,9 @@ namespace ImportData
             databaseTables.DataSource = ListTables();
         }
         private void button1_Click(object sender, EventArgs e)
-            
+
         {
-          
+
             if (txtType.SelectedItem.ToString() == "Excel File")
             {
                 OpenFileDialog fdlg = new OpenFileDialog();
@@ -260,7 +261,7 @@ namespace ImportData
                         MessageBox.Show(folderPath);
                     }
                 }
-        
+
                 if (!Directory.Exists(folderPath))
                 {
                     Directory.CreateDirectory(folderPath);
@@ -369,7 +370,7 @@ namespace ImportData
                         conn.Open();
                         for (int i = 0; i < dataGridView.Rows.Count; i++)
                         {
-                            StrQuery = @"INSERT INTO "+ databaseTables.SelectedValue+ " VALUES ("
+                            StrQuery = @"INSERT INTO " + databaseTables.SelectedValue + " VALUES ("
                                 + dataGridView.Rows[i].Cells[1].Value + ", "
                                 + dataGridView.Rows[i].Cells[2].Value + ", "
                                 + dataGridView.Rows[i].Cells[3].Value + ", "
@@ -386,7 +387,112 @@ namespace ImportData
             {
                 MessageBox.Show(ex.ToString());
             }
+
+        }
+        private void drawRectangle(Form myForm, int xPosition, int yPosition, int width, int hight, Color color)
+        {
+            Graphics g = myForm.CreateGraphics();
+            Brush brush = new SolidBrush(color);
+            g.FillRectangle(brush, xPosition, yPosition, width, hight);
+            g.Dispose();
+
+        }
+       
+        private void createAxe(Form myform,int flechSize,int xStart,int yStart,int xEnd,int yEnd)
+        {
+            using (Pen p = new Pen(Color.Black, 2))
+            using (GraphicsPath capPath = new GraphicsPath())
+            {
+                Graphics g = myform.CreateGraphics();
+
+                // A triangle
+                capPath.AddLine(-flechSize, 0, flechSize, 0);
+                capPath.AddLine(-flechSize, 0, 0, flechSize);
+                capPath.AddLine(0, flechSize, flechSize, 0);
+
+                p.CustomEndCap = new System.Drawing.Drawing2D.CustomLineCap(null, capPath);
+                g.DrawLine(p, xStart, yStart, xEnd, yEnd);
+
+            }
             
+
+
+        }
+        private void generateLable(Form myform,string[] arrg)
+        {
+            int taille = 33;
+            for(int i=0; i< 5; i++)
+            {
+                System.Windows.Forms.Label label = new System.Windows.Forms.Label();
+                label.Location = new System.Drawing.Point(taille, 5);
+                taille += 53;
+                label.Name = "label" + i.ToString();
+                label.Text = "lable "+i.ToString();
+                label.Parent = myform;
+                label.Size = new System.Drawing.Size(77, 21);
+                label.AutoSize = true;
+                label.Show();
+            }
+
+        }
+        private void createHorizontalGrades(Form myform ,int size)
+        {
+            Graphics gg = myform.CreateGraphics();
+            int taille = 50;
+            for (int i = 0; i < size; i++)
+            {
+                gg.DrawLine(new Pen(Color.Black, 1), taille, 30, taille, 15);
+                taille += 53;
+            }
+
+        }
+        private void createVerttalGrades(Form myform, int size)
+        {
+            Graphics gg = myform.CreateGraphics();
+            int taille = 50;
+            for (int i = 0; i < size; i++)
+            {
+               gg.DrawLine(new Pen(Color.Black, 1), 20, taille, 25, taille);
+                taille += 20;
+            }
+        }
+        private void createRepare(Form myform)
+        {
+            generateLable(myform, new string[] { "dfdf", "fddf" });
+
+            createAxe(myform,3,25,25,600,25);
+            createHorizontalGrades(myform, 6);
+            createAxe(myform, 3, 25, 25, 25,350);
+            createVerttalGrades(myform, 20);
+
+
+        }
+        private void button6_Click(object sender, EventArgs e)
+        {
+
+
+            Form myform = new Form();
+
+            myform.Text = "Main Window";
+            myform.Size = new Size(640, 400);
+            myform.FormBorderStyle = FormBorderStyle.FixedDialog;
+            myform.StartPosition = FormStartPosition.CenterScreen;
+            myform.Show();  
+            //  ->  First Show
+            createRepare(myform);
+            elements[] els = new elements[4];
+            els[0] = new elements(0, 50,Color.Green);
+            els[1] = new elements(1, 150,Color.Red);
+            els[2] = new elements(2, 250,Color.Blue);
+            els[3] = new elements(3,80,Color.Yellow);
+
+            int size = 26;
+            foreach(elements item in els)
+            {
+                drawRectangle(myform, size, 26, 50,item.val,item.c);
+                size += 53;
+
+            }
         }
     }
 }
